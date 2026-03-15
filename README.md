@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/repodoc-preview.png" width="900">
+</p>
+
 # AI Repository Intelligence Platform (RepoDoc)
 
 RepoDoc is an advanced, AI-powered static analysis platform designed to inspect GitHub repositories. It evaluates code health, predicts bug-prone files using AI, generates dependency graphs, identifies semantic duplicates using CodeBERT, and detects security violations.
