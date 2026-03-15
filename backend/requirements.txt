@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+gitpython
+radon
+transformers
+torch
+networkx
+scikit-learn
+matplotlib
+reportlab
+pydot
