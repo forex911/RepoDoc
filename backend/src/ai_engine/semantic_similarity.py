@@ -6,10 +6,17 @@ Detect semantically similar functions using CodeBERT embeddings.
 import os
 import ast
 import hashlib
+import logging
 from typing import List, Dict, Any
+from itertools import combinations
+from sklearn.metrics.pairwise import cosine_similarity
 
 from src.ai_engine.embeddings import embed_code
 from src.ai_engine.similarity_detection import detect_similarity
+
+MAX_FILES = 30
+MAX_FUNCTIONS = 120
+MAX_FILE_SIZE = 15000
 
 
 # In-memory embedding cache: hash(file_content) -> {func_name: embedding}
@@ -86,22 +93,30 @@ def find_semantic_duplicates(repo_path: str, threshold: float = 0.95, max_result
     all_functions = []
     all_embeddings = []
 
-    # Limit to 2000 files for performance
+    # Limit to smaller set for performance
     file_count = 0
 
+    logging.info("Semantic analysis started")
+
     for root, dirs, files in os.walk(repo_path):
-        # Skip hidden dirs and common non-source dirs
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in (
+        # Skip hidden dirs, common non-source dirs, and test dirs
+        dirs[:] = [d for d in dirs if not d.startswith('.') and not any(skip in d.lower() for skip in [
             'node_modules', 'venv', '.venv', '__pycache__', '.git',
-            'dist', 'build', '.tox', '.eggs'
-        )]
+            'dist', 'build', '.tox', '.eggs', 'test', 'spec', 'tests'
+        ])]
 
         for file in files:
             if not file.endswith(".py"):
                 continue
 
+            path = os.path.join(root, file)
+            
+            # Skip large files to save CPU
+            if os.path.getsize(path) > MAX_FILE_SIZE:
+                continue
+
             file_count += 1
-            if file_count > 2000:
+            if file_count > MAX_FILES:
                 break
 
             path = os.path.join(root, file)
@@ -143,17 +158,28 @@ def find_semantic_duplicates(repo_path: str, threshold: float = 0.95, max_result
             if file_cache:
                 _embedding_cache[fhash] = file_cache
 
-        if file_count > 2000:
+            if len(all_functions) >= MAX_FUNCTIONS:
+                all_functions = all_functions[:MAX_FUNCTIONS]
+                all_embeddings = all_embeddings[:MAX_FUNCTIONS]
+                break
+
+        if file_count > MAX_FILES or len(all_functions) >= MAX_FUNCTIONS:
             break
 
+    logging.info(f"Functions analyzed: {len(all_functions)}")
+
     if len(all_embeddings) < 2:
+        logging.info("Semantic analysis completed (insufficient functions)")
         return []
 
-    # Find similar pairs
-    similar_indices = detect_similarity(all_embeddings)
-
+    # Find similar pairs bounding length
     results = []
-    for i, j in similar_indices:
+    
+    # Custom fast bounded pairing fallback if detect_similarity is too slow
+    # but for now we'll do direct pairwise since combinations is faster on <120 N
+    # We sample combinations limiting to the subset
+    
+    for i, j in combinations(range(len(all_embeddings)), 2):
         fi = all_functions[i]
         fj = all_functions[j]
 
@@ -161,9 +187,9 @@ def find_semantic_duplicates(repo_path: str, threshold: float = 0.95, max_result
         if fi["file"] == fj["file"] and fi["name"] == fj["name"]:
             continue
 
-        from sklearn.metrics.pairwise import cosine_similarity
         sim_score = float(cosine_similarity(
-            all_embeddings[i], all_embeddings[j]
+            all_embeddings[i].reshape(1, -1),
+            all_embeddings[j].reshape(1, -1)
         )[0][0])
 
         if sim_score >= threshold:
@@ -177,5 +203,7 @@ def find_semantic_duplicates(repo_path: str, threshold: float = 0.95, max_result
 
     # Sort by similarity descending, cap at max_results
     results.sort(key=lambda x: x["similarity"], reverse=True)
+    
+    logging.info("Semantic analysis completed")
 
     return results[:max_results]

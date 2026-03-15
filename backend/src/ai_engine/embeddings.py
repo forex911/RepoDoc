@@ -1,26 +1,22 @@
-from transformers import AutoTokenizer, AutoModel
+import logging
 import torch
 
-TOKENIZER = None
 MODEL = None
 
-def load_model():
-    global TOKENIZER, MODEL
-    if TOKENIZER is None or MODEL is None:
-        import logging
-        logging.info("Lazy loading CodeBERT model...")
-        TOKENIZER = AutoTokenizer.from_pretrained("microsoft/codebert-base")
-        MODEL = AutoModel.from_pretrained("microsoft/codebert-base")
-
+def get_model():
+    global MODEL
+    if MODEL is None:
+        logging.info("Lazy loading CodeBERT model via SentenceTransformer...")
+        from sentence_transformers import SentenceTransformer
+        MODEL = SentenceTransformer("microsoft/codebert-base")
+    return MODEL
 
 def embed_code(code):
-    if MODEL is None:
-        load_model()
-
-    tokens = TOKENIZER(code, return_tensors="pt", truncation=True)
-
-    with torch.no_grad():
-        output = MODEL(**tokens)
-
-    embedding = output.last_hidden_state.mean(dim=1)
+    model = get_model()
+    # SentenceTransformer outputs a numpy array or torch tensor based on settings.
+    # We'll just generate the embedding directly using its `.encode` method
+    # and convert it to a compatible 2D tensor format as expected downstream.
+    embedding = model.encode(code, convert_to_tensor=True)
+    if embedding.dim() == 1:
+        embedding = embedding.unsqueeze(0)
     return embedding
