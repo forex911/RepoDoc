@@ -220,6 +220,123 @@ def analyze_repo_stream(data: RepoRequest):
 
 
 # -----------------------------
+# Legacy Analysis Endpoint (non-streaming)
+# -----------------------------
+
+@app.post("/analyze")
+def analyze_repo(data: RepoRequest):
+
+    repo_path = clone_repo(data.repo_url)
+
+    complexity_report = analyze_complexity(repo_path)
+    duplicates = detect_duplicates(repo_path)
+    try:
+        architecture_diagram = generate_architecture_diagram(repo_path)
+    except Exception:
+        architecture_diagram = None
+    commit_activity_graph = analyze_commit_history(repo_path)
+    contributors = analyze_contributors(repo_path)
+    churn = analyze_code_churn(repo_path)
+    risky_files = detect_risky_files(complexity_report, churn)
+    large_modules = analyze_module_sizes(repo_path)
+    suggestions = generate_suggestions(complexity_report, duplicates)
+    health_score = calculate_health_score(complexity_report, duplicates, churn)
+    violations = detect_violations(repo_path)
+
+    try:
+        from src.ai_engine.semantic_similarity import find_semantic_duplicates
+        semantic_dupes = find_semantic_duplicates(repo_path)
+    except Exception:
+        semantic_dupes = []
+
+    risk_predictions = predict_risky_files(
+        repo_path, complexity_report, churn, contributors, large_modules
+    )
+
+    try:
+        graph = build_dependency_graph(repo_path)
+        nodes = [{"id": n} for n in graph.nodes()]
+        edges = [{"source": u, "target": v} for u, v in graph.edges()]
+        arch_graph = {"nodes": nodes, "edges": edges}
+    except Exception:
+        arch_graph = {"nodes": [], "edges": []}
+
+    result = {
+        "repo": data.repo_url,
+        "health_score": health_score,
+        "complex_functions": complexity_report,
+        "duplicates": duplicates,
+        "contributors": contributors,
+        "code_churn": churn,
+        "risky_files": risky_files,
+        "large_modules": large_modules,
+        "suggestions": suggestions,
+        "architecture_diagram": architecture_diagram,
+        "commit_activity_graph": commit_activity_graph,
+        "violations": violations,
+        "semantic_duplicates": semantic_dupes,
+        "risk_predictions": risk_predictions,
+        "architecture_graph": arch_graph,
+    }
+
+
+    return result
+
+
+# -----------------------------
+# Semantic Duplicates Endpoint
+# -----------------------------
+
+@app.post("/semantic-duplicates")
+def get_semantic_duplicates(data: RepoRequest):
+    repo_path = clone_repo(data.repo_url)
+    try:
+        from src.ai_engine.semantic_similarity import find_semantic_duplicates
+        results = find_semantic_duplicates(repo_path)
+    except Exception as e:
+        return {"error": str(e), "semantic_duplicates": []}
+    return {"semantic_duplicates": results}
+
+
+# -----------------------------
+# Risk Analysis Endpoint
+# -----------------------------
+
+@app.post("/risk-analysis")
+def get_risk_analysis(data: RepoRequest):
+    repo_path = clone_repo(data.repo_url)
+
+    complexity_report = analyze_complexity(repo_path)
+    churn = analyze_code_churn(repo_path)
+    contributors = analyze_contributors(repo_path)
+    large_modules = analyze_module_sizes(repo_path)
+
+    predictions = predict_risky_files(
+        repo_path, complexity_report, churn, contributors, large_modules
+    )
+
+    return {"risk_predictions": predictions}
+
+
+# -----------------------------
+# Architecture Graph Endpoint
+# -----------------------------
+
+@app.post("/architecture-graph")
+def get_architecture_graph(data: RepoRequest):
+    repo_path = clone_repo(data.repo_url)
+
+    try:
+        graph = build_dependency_graph(repo_path)
+        nodes = [{"id": n} for n in graph.nodes()]
+        edges = [{"source": u, "target": v} for u, v in graph.edges()]
+    except Exception:
+        nodes, edges = [], []
+
+    return {"nodes": nodes, "edges": edges}
+
+
+# -----------------------------
 # Report generator
 # -----------------------------
 

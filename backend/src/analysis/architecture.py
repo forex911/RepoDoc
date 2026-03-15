@@ -51,14 +51,20 @@ def build_dependency_graph(repo_path):
 
 
 def generate_architecture_diagram(repo_path):
+    import shutil
+    if shutil.which("dot") is None:
+        return None
 
-    graph = build_dependency_graph(repo_path)
+    try:
+        graph = build_dependency_graph(repo_path)
 
-    output_dot = "architecture.dot"
-    output_png = "architecture.png"
+        output_dot = "architecture.dot"
+        output_png = "architecture.png"
 
-    write_dot(graph, output_dot)
+        write_dot(graph, output_dot)
 
-    os.system(f"dot -Tpng {output_dot} -o {output_png}")
+        os.system(f"dot -Tpng {output_dot} -o {output_png}")
 
-    return output_png
+        return output_png
+    except Exception:
+        return None
