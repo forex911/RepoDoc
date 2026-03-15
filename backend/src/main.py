@@ -125,7 +125,10 @@ def analyze_repo_stream(data: RepoRequest):
             result["duplicates"] = duplicates
 
             yield _sse_event("progress", {"step":4,"total":13,"message":"Architecture analysis"})
-            architecture_diagram = generate_architecture_diagram(repo_path)
+            try:
+                architecture_diagram = generate_architecture_diagram(repo_path)
+            except Exception:
+                architecture_diagram = None
             result["architecture_diagram"] = architecture_diagram
 
             yield _sse_event("progress", {"step":5,"total":13,"message":"Commit history"})
@@ -181,13 +184,15 @@ def analyze_repo_stream(data: RepoRequest):
 
             result["risk_predictions"] = risk_predictions
 
+            
             try:
                 graph = build_dependency_graph(repo_path)
-                nodes = [{"id":n} for n in graph.nodes()]
-                edges = [{"source":u,"target":v} for u,v in graph.edges()]
-                result["architecture_graph"] = {"nodes":nodes,"edges":edges}
-            except:
-                result["architecture_graph"] = {"nodes":[],"edges":[]}
+                nodes = [{"id": n} for n in graph.nodes()]
+                edges = [{"source": u, "target": v} for u, v in graph.edges()]
+                result["architecture_graph"] = {"nodes": nodes, "edges": edges}
+            except Exception:
+                result["architecture_graph"] = {"nodes": [], "edges": []}
+            
 
             yield _sse_event("complete", result)
 
