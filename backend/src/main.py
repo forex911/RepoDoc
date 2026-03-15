@@ -29,6 +29,7 @@ from src.report.report_generator import (
     generate_pdf_report,
     generate_json_summary
 )
+import uvicorn
 
 import json
 import traceback
@@ -385,3 +386,6 @@ def generate_report(request: dict):
 def get_architecture():
     return FileResponse("architecture.png")
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("src.main:app", host="0.0.0.0", port=port)
