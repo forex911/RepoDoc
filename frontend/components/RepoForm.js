@@ -2,16 +2,27 @@
 
 import { useState } from "react"
 import { Icons } from "./Icons"
-import { analyzeRepo } from "../lib/api"
+import { analyzeRepo, spotAnalysis, stopAnalysis } from "../lib/api"
 
-export default function RepoForm({ setData, setLoading, setError, setProgress, loading }) {
+export default function RepoForm({ setData, setLoading, setError, setProgress, loading, setProcessingTime }) {
   const [repo, setRepo] = useState("")
+  const [jobId, setJobId] = useState(null)
+  const [timer, setTimer] = useState(0)
+  const [timerInterval, setTimerInterval] = useState(null)
 
   const analyze = async () => {
     if (!repo.trim()) return
     setLoading(true)
     setError(null)
     setData(null)
+    setJobId(null)
+    if (setProcessingTime) setProcessingTime(null)
+    
+    setTimer(0)
+    if (timerInterval) clearInterval(timerInterval)
+    const newInterval = setInterval(() => setTimer(t => t + 0.1), 100)
+    setTimerInterval(newInterval)
+    
     setProgress({ step: 0, total: 13, message: "Starting analysis..." })
 
     try {
@@ -38,9 +49,20 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
           if (!eventType || !eventData) continue
           try {
             const parsed = JSON.parse(eventData)
-            if (eventType === "progress") setProgress(parsed)
-            else if (eventType === "complete") { setData(parsed); setProgress(null) }
-            else if (eventType === "error") throw new Error(parsed.message || "Analysis failed")
+            if (eventType === "job_started") {
+                setJobId(parsed.job_id)
+            } else if (eventType === "progress") {
+                setProgress(parsed)
+            } else if (eventType === "complete") { 
+                setData(parsed)
+                setProgress(null)
+                if (setProcessingTime) setProcessingTime(parsed.processing_time_seconds)
+            } else if (eventType === "stopped") {
+                setProgress(null)
+                setError("Analysis was stopped by the user.")
+            } else if (eventType === "error") {
+                throw new Error(parsed.message || "Analysis failed")
+            }
           } catch (parseErr) {
             if (parseErr.message && !parseErr.message.includes("JSON")) throw parseErr
           }
@@ -49,9 +71,59 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
     } catch (e) {
       console.error(e)
       setProgress(null)
-      setError("Repository analysis failed. Please check the repo URL.")
+      if (e.message !== "Analysis was stopped by the user.") {
+          setError("Repository analysis failed. Please check the repo URL.")
+      }
     } finally {
       setLoading(false)
+      clearInterval(newInterval)
+    }
+  }
+
+  const handleStop = async () => {
+    if (jobId) {
+        try {
+            await stopAnalysis(jobId)
+            setJobId(null)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+  }
+
+  const handleSpotScan = async () => {
+    if (!repo.trim()) return
+    setLoading(true)
+    setError(null)
+    setData(null)
+    setJobId(null)
+    if (setProcessingTime) setProcessingTime(null)
+    
+    setTimer(0)
+    if (timerInterval) clearInterval(timerInterval)
+    const newInterval = setInterval(() => setTimer(t => t + 0.1), 100)
+    setTimerInterval(newInterval)
+    
+    setProgress({ step: 0, total: 1, message: "Running quick spot scan..." })
+
+    try {
+        const result = await spotAnalysis(repo.trim())
+        setData({
+            repo: result.repo,
+            is_spot_scan: true,
+            total_files: result.total_files,
+            languages: result.languages,
+            largest_modules: result.largest_modules,
+        })
+        setProgress(null)
+        if (setProcessingTime) setProcessingTime(result.processing_time_seconds)
+    } catch (e) {
+        console.error(e)
+        setProgress(null)
+        setError("Spot scan failed. Please check the repo URL.")
+    } finally {
+        setLoading(false)
+        clearInterval(newInterval)
     }
   }
 
@@ -74,13 +146,35 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
             disabled={loading}
           />
         </div>
-        <button className="btn-analyze" onClick={analyze} disabled={loading || !repo.trim()}>
-          {loading ? (
-            <><span className="icon icon-sm" style={{ animation: "spin 1s linear infinite" }}>{Icons.loader}</span>Analyzing...</>
+        {loading && (
+          <div className="processing-timer" style={{ fontSize: "0.85rem", color: "#8a8f98", marginTop: "10px", textAlign: "center", width: "100%" }}>
+            Processing time: {timer.toFixed(1)} seconds
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "15px" }}>
+          {!loading ? (
+            <>
+              <button className="btn-analyze" style={{ flex: 1, background: "#2563eb" }} onClick={analyze} disabled={!repo.trim()}>
+                <span className="icon icon-sm">{Icons.rocket}</span> Analyze Repository
+              </button>
+              <button className="btn-analyze" style={{ flex: 1, background: "#10b981" }} onClick={handleSpotScan} disabled={!repo.trim()}>
+                <span className="icon icon-sm">{Icons.zap}</span> Quick Scan
+              </button>
+            </>
           ) : (
-            <><span className="icon icon-sm">{Icons.rocket}</span>Analyze</>
+            <>
+              <button className="btn-analyze" style={{ flex: 1, background: "#475569", cursor: "wait" }} disabled>
+                <span className="icon icon-sm" style={{ animation: "spin 1s linear infinite" }}>{Icons.loader}</span> Analyzing...
+              </button>
+              {jobId && (
+                <button className="btn-analyze" style={{ flex: 1, background: "#ef4444" }} onClick={handleStop}>
+                  <span className="icon icon-sm">{Icons.close}</span> Stop Analysis
+                </button>
+              )}
+            </>
           )}
-        </button>
+        </div>
       </div>
     </div>
   )

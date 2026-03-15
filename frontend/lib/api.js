@@ -13,3 +13,23 @@ export async function analyzeRepo(repoUrl) {
 
     return response;
 }
+
+export async function stopAnalysis(jobId) {
+    const response = await fetch(`${API_URL}/stop-analysis`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: jobId })
+    });
+    if (!response.ok) throw new Error("Could not stop analysis");
+    return response.json();
+}
+
+export async function spotAnalysis(repoUrl) {
+    const response = await fetch(`${API_URL}/spot-analysis`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo_url: repoUrl })
+    });
+    if (!response.ok) throw new Error("Spot analysis failed");
+    return response.json();
+}
