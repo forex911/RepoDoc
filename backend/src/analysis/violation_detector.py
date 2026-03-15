@@ -77,7 +77,10 @@ def detect_violations(repo_path):
     # Check for .env files committed
     for root, dirs, files in os.walk(repo_path):
         # Skip hidden dirs and common non-source dirs
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('node_modules', 'venv', '__pycache__', '.git')]
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in (
+            'node_modules', 'venv', '.venv', '__pycache__', '.git',
+            'dist', 'build', '.tox', '.eggs'
+        )]
 
         for fname in files:
             if fname in ('.env', '.env.local', '.env.production'):
@@ -93,7 +96,10 @@ def detect_violations(repo_path):
     scannable_extensions = {'.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.go', '.rb', '.php', '.yml', '.yaml', '.json', '.env', '.cfg', '.ini', '.toml'}
 
     for root, dirs, files in os.walk(repo_path):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('node_modules', 'venv', '__pycache__', '.git', 'dist', 'build')]
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in (
+            'node_modules', 'venv', '.venv', '__pycache__', '.git',
+            'dist', 'build', '.tox', '.eggs'
+        )]
 
         for fname in files:
             ext = os.path.splitext(fname)[1].lower()

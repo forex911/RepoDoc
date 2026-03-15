@@ -6,6 +6,10 @@ def analyze_module_sizes(repo_path):
     large_files = []
 
     for root, dirs, files in os.walk(repo_path):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in (
+            'node_modules', 'venv', '.venv', '__pycache__', '.git',
+            'dist', 'build', '.tox', '.eggs'
+        )]
 
         for file in files:
 

@@ -1,7 +1,10 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, HttpUrl, validator
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse, Response, JSONResponse
+
+from dotenv import load_dotenv
+import logging
 
 from src.parser.repo_loader import clone_repo
 
@@ -31,6 +34,16 @@ import json
 import traceback
 import os
 
+# Load environment variables
+load_dotenv()
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("repodoc-api")
+
 
 app = FastAPI(title="AI Repository Intelligence API")
 
@@ -57,6 +70,12 @@ app.add_middleware(
 class RepoRequest(BaseModel):
     repo_url: str
 
+    @validator('repo_url')
+    def validate_github_url(cls, v):
+        if not v.startswith("https://github.com/"):
+            raise ValueError('Only https://github.com/* URLs are supported.')
+        return v
+
 
 # -----------------------------
 # Root Endpoint
@@ -73,6 +92,9 @@ def home():
 
 @app.post("/analyze-stream")
 def analyze_repo_stream(data: RepoRequest):
+    
+    # URL is already validated by Pydantic validator to be github.com
+    logger.info(f"Starting analysis for repo: {data.repo_url}")
 
     def event_stream():
         result = {}
@@ -162,11 +184,18 @@ def analyze_repo_stream(data: RepoRequest):
 
 
             # Done — send final result
+            logger.info(f"Analysis completed successfully for: {data.repo_url}")
             yield _sse_event("complete", result)
 
         except Exception as e:
+            logger.error(f"Analysis failed for {data.repo_url}: {str(e)}", exc_info=True)
             traceback.print_exc()
             yield _sse_event("error", {"message": str(e)})
+
+        finally:
+            if 'repo_path' in locals() and repo_path:
+                from src.parser.repo_loader import cleanup_repo
+                cleanup_repo(repo_path)
 
     return StreamingResponse(
         event_stream(),

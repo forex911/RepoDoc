@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { Icons } from "./Icons"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+import { analyzeRepo } from "../lib/api"
 
 export default function RepoForm({ setData, setLoading, setError, setProgress, loading }) {
   const [repo, setRepo] = useState("")
@@ -16,14 +15,7 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
     setProgress({ step: 0, total: 13, message: "Starting analysis..." })
 
     try {
-      const res = await fetch(`${API_URL}/analyze-stream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo_url: repo.trim() })
-      })
-
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`)
-
+      const res = await analyzeRepo(repo.trim())
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ""
@@ -57,11 +49,7 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
     } catch (e) {
       console.error(e)
       setProgress(null)
-      setError(
-        e.message.includes("Failed to fetch") || e.message.includes("NetworkError")
-          ? "Cannot connect to backend. Make sure the server is running on port 8000."
-          : `Analysis failed: ${e.message}`
-      )
+      setError("Repository analysis failed. Please check the repo URL.")
     } finally {
       setLoading(false)
     }

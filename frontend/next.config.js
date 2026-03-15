@@ -8,8 +8,8 @@ const nextConfig = {
         port: '8000',
         pathname: '/**',
       },
-    ],
   },
+  reactStrictMode: true,
 }
 
 module.exports = nextConfig
