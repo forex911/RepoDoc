@@ -232,13 +232,10 @@ def analyze_repo_stream(data: RepoRequest):
                 from src.ai_engine.semantic_similarity import find_semantic_duplicates
                 
                 # Render free tier optimization - hard 30s timeout to prevent locking
-                loop = asyncio.get_event_loop()
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    semantic_dupes = await asyncio.wait_for(
-                        loop.run_in_executor(pool, find_semantic_duplicates, repo_path),
-                        timeout=30.0
-                    )
-            except asyncio.TimeoutError:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(find_semantic_duplicates, repo_path)
+                    semantic_dupes = future.result(timeout=30.0)
+            except concurrent.futures.TimeoutError:
                 logger.warning(f"Semantic analysis timed out for {data.repo_url}")
             except Exception as e:
                 logger.error(f"Semantic analysis error: {str(e)}")
@@ -397,14 +394,9 @@ def analyze_repo(data: RepoRequest):
 
     try:
         from src.ai_engine.semantic_similarity import find_semantic_duplicates
-        loop = asyncio.get_event_loop()
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            semantic_dupes = loop.run_until_complete(
-                asyncio.wait_for(
-                    loop.run_in_executor(pool, find_semantic_duplicates, repo_path),
-                    timeout=30.0
-                )
-            )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(find_semantic_duplicates, repo_path)
+            semantic_dupes = future.result(timeout=30.0)
     except Exception:
         semantic_dupes = []
 
@@ -451,15 +443,10 @@ def get_semantic_duplicates(data: RepoRequest):
     repo_path = clone_repo(data.repo_url)
     try:
         from src.ai_engine.semantic_similarity import find_semantic_duplicates
-        loop = asyncio.get_event_loop()
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            results = loop.run_until_complete(
-                asyncio.wait_for(
-                    loop.run_in_executor(pool, find_semantic_duplicates, repo_path),
-                    timeout=30.0
-                )
-            )
-    except asyncio.TimeoutError:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(find_semantic_duplicates, repo_path)
+            results = future.result(timeout=30.0)
+    except concurrent.futures.TimeoutError:
         return {"error": "Semantic analysis timed out", "semantic_duplicates": []}
     except Exception as e:
         return {"error": str(e), "semantic_duplicates": []}
