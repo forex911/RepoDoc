@@ -1,5 +1,20 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+export async function checkHealth() {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+        const response = await fetch(`${API_URL}/health`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+        return response.ok;
+    } catch {
+        clearTimeout(timeout);
+        return false;
+    }
+}
+
 export async function analyzeRepo(repoUrl) {
     const response = await fetch(`${API_URL}/analyze-stream`, {
         method: "POST",

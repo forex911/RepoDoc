@@ -101,6 +101,15 @@ def home():
 
 
 # -----------------------------
+# Health Check Endpoint
+# -----------------------------
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "AI Repo Analyzer API"}
+
+
+# -----------------------------
 # SSE helper
 # -----------------------------
 

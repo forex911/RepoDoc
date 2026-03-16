@@ -1,17 +1,73 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Icons } from "./Icons"
-import { analyzeRepo, spotAnalysis, stopAnalysis } from "../lib/api"
+import { analyzeRepo, spotAnalysis, stopAnalysis, checkHealth } from "../lib/api"
 
-export default function RepoForm({ setData, setLoading, setError, setProgress, loading, setProcessingTime }) {
+const COLD_START_MESSAGES = [
+  "⚡ Waking analysis engine…",
+  "Preparing repository analyzer…",
+  "Starting AI analysis service…"
+]
+
+export default function RepoForm({ setData, setLoading, setError, setProgress, loading, setProcessingTime, serverOnline }) {
   const [repo, setRepo] = useState("")
   const [jobId, setJobId] = useState(null)
   const [timer, setTimer] = useState(0)
   const [timerInterval, setTimerInterval] = useState(null)
+  const [coldStartActive, setColdStartActive] = useState(false)
+  const [coldStartMsgIndex, setColdStartMsgIndex] = useState(0)
+  const [engineReady, setEngineReady] = useState(false)
+  const coldStartInterval = useRef(null)
+
+  // Rotate cold-start messages
+  useEffect(() => {
+    if (coldStartActive) {
+      coldStartInterval.current = setInterval(() => {
+        setColdStartMsgIndex(i => (i + 1) % COLD_START_MESSAGES.length)
+      }, 3000)
+    } else {
+      if (coldStartInterval.current) clearInterval(coldStartInterval.current)
+    }
+    return () => { if (coldStartInterval.current) clearInterval(coldStartInterval.current) }
+  }, [coldStartActive])
+
+  // If server comes online while cold-start is showing, clear it
+  useEffect(() => {
+    if (serverOnline && coldStartActive) {
+      setColdStartActive(false)
+      setEngineReady(true)
+      setTimeout(() => setEngineReady(false), 4000)
+    }
+  }, [serverOnline, coldStartActive])
+
+  const waitForServer = async () => {
+    // Poll until server responds, up to 60s
+    for (let i = 0; i < 12; i++) {
+      const ok = await checkHealth()
+      if (ok) return true
+      await new Promise(r => setTimeout(r, 5000))
+    }
+    return false
+  }
 
   const analyze = async () => {
     if (!repo.trim()) return
+
+    // If server is not online, show cold-start and wait
+    if (!serverOnline) {
+      setColdStartActive(true)
+      setColdStartMsgIndex(0)
+      const ready = await waitForServer()
+      setColdStartActive(false)
+      if (!ready) {
+        setError("Server could not be reached. Please try again later.")
+        return
+      }
+      setEngineReady(true)
+      setTimeout(() => setEngineReady(false), 3000)
+    }
+
     setLoading(true)
     setError(null)
     setData(null)
@@ -93,6 +149,21 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
 
   const handleSpotScan = async () => {
     if (!repo.trim()) return
+
+    // If server is not online, show cold-start and wait
+    if (!serverOnline) {
+      setColdStartActive(true)
+      setColdStartMsgIndex(0)
+      const ready = await waitForServer()
+      setColdStartActive(false)
+      if (!ready) {
+        setError("Server could not be reached. Please try again later.")
+        return
+      }
+      setEngineReady(true)
+      setTimeout(() => setEngineReady(false), 3000)
+    }
+
     setLoading(true)
     setError(null)
     setData(null)
@@ -143,7 +214,7 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
             value={repo}
             onChange={(e) => setRepo(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={loading}
+            disabled={loading || coldStartActive}
           />
         </div>
         {loading && (
@@ -152,8 +223,26 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
           </div>
         )}
 
+        {/* Cold-start overlay */}
+        {coldStartActive && (
+          <div className="cold-start-overlay">
+            <div className="cold-start-msg" key={coldStartMsgIndex}>
+              {COLD_START_MESSAGES[coldStartMsgIndex]}
+            </div>
+            <div className="cold-start-sub">
+              The backend is waking up (Render free tier).<br />
+              This may take up to 60 seconds.
+            </div>
+          </div>
+        )}
+
+        {/* Engine ready flash */}
+        {engineReady && !loading && (
+          <div className="cold-start-ready">🟢 Analysis Engine Ready</div>
+        )}
+
         <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "15px" }}>
-          {!loading ? (
+          {!loading && !coldStartActive ? (
             <>
               <button className="btn-analyze" style={{ flex: 1, background: "#2563eb" }} onClick={analyze} disabled={!repo.trim()}>
                 <span className="icon icon-sm">{Icons.rocket}</span> Analyze Repository
@@ -162,6 +251,10 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
                 <span className="icon icon-sm">{Icons.zap}</span> Quick Scan
               </button>
             </>
+          ) : coldStartActive ? (
+            <button className="btn-analyze" style={{ flex: 1, background: "#d97706", cursor: "wait" }} disabled>
+              <span className="icon icon-sm" style={{ animation: "spin 1s linear infinite" }}>{Icons.loader}</span> Waking Server…
+            </button>
           ) : (
             <>
               <button className="btn-analyze" style={{ flex: 1, background: "#475569", cursor: "wait" }} disabled>

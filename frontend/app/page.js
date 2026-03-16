@@ -17,6 +17,7 @@ import Violations from "../components/Violations"
 import SemanticDuplicates from "../components/SemanticDuplicates"
 import RiskDashboard from "../components/RiskDashboard"
 import ReportViewer from "../components/ReportViewer"
+import ServerStatus from "../components/ServerStatus"
 
 export default function Home() {
   const [data, setData] = useState(null)
@@ -24,9 +25,13 @@ export default function Home() {
   const [error, setError] = useState(null)
   const [progress, setProgress] = useState(null)
   const [processingTime, setProcessingTime] = useState(null)
+  const [serverOnline, setServerOnline] = useState(false)
 
   return (
     <div className="app-wrapper">
+
+      {/* ─── Server Status Badge ─── */}
+      <ServerStatus onStatusChange={setServerOnline} />
 
       {/* ─── Hero Section ─── */}
       <section className="hero">
@@ -45,6 +50,7 @@ export default function Home() {
           setProgress={setProgress}
           setProcessingTime={setProcessingTime}
           loading={loading}
+          serverOnline={serverOnline}
         />
         {error && <div className="error-message">{error}</div>}
       </section>
