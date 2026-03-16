@@ -69,6 +69,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -77,6 +78,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.06), transparent),
     radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139, 92, 246, 0.04), transparent);
@@ -363,9 +365,7 @@ h1, h2, h3, h4, h5, h6 {
   animation: slideUp 0.6s ease;
 }
 
-@media (max-width: 900px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
-}
+/* Responsive grid handled in the responsive section below */
 
 .full-width { grid-column: 1 / -1; }
 
@@ -1489,3 +1489,809 @@ h1, h2, h3, h4, h5, h6 {
   50% { box-shadow: 0 0 10px rgba(248, 113, 113, 0.7); }
 }
 
+
+/* ============================================
+   Spot Scan Result Classes
+   ============================================ */
+
+.spot-scan-results {
+  padding: 1.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-top: 1.5rem;
+  backdrop-filter: blur(12px);
+  animation: slideUp 0.5s ease;
+}
+
+.spot-scan-results h2 {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.spot-scan-results .spot-repo-link {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.spot-scan-results .spot-repo-link a {
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.spot-scan-results .spot-repo-link a:hover {
+  color: var(--accent-primary-hover);
+}
+
+.spot-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.spot-stat-card {
+  background: var(--bg-surface);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-normal);
+}
+
+.spot-stat-card:hover {
+  border-color: var(--border-primary);
+  transform: translateY(-2px);
+}
+
+.spot-stat-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.spot-stat-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin-top: 0.25rem;
+}
+
+.spot-section-card {
+  background: var(--bg-surface);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 1rem;
+}
+
+.spot-section-card h3 {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  margin-bottom: 0.65rem;
+}
+
+.spot-lang-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spot-lang-tag {
+  background: var(--bg-elevated);
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+}
+
+.spot-module-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.35rem;
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+  gap: 0.75rem;
+}
+
+.spot-module-row:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-primary);
+}
+
+.spot-module-name {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  word-break: break-all;
+  min-width: 0;
+}
+
+.spot-module-lines {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+
+/* ============================================
+   Button Row — RepoForm
+   ============================================ */
+
+.button-row {
+  display: flex;
+  gap: 0.65rem;
+  width: 100%;
+  margin-top: 0.85rem;
+}
+
+.button-row .btn-analyze {
+  flex: 1;
+  justify-content: center;
+  min-height: 48px;
+}
+
+
+/* ============================================
+   Processing Timer
+   ============================================ */
+
+.processing-timer {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.65rem;
+  text-align: center;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* ---------- ≤1200px (Small Desktop / Large Laptop) ---------- */
+@media (max-width: 1200px) {
+  .app-wrapper {
+    max-width: 1080px;
+    padding: 0 1.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+  }
+}
+
+/* ---------- ≤1024px (Laptop / Small Desktop) ---------- */
+@media (max-width: 1024px) {
+  .app-wrapper {
+    max-width: 960px;
+  }
+
+  .dashboard-grid {
+    gap: 1rem;
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.65rem;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  .cytoscape-container {
+    height: 400px;
+  }
+}
+
+/* ---------- ≤768px (Tablet) ---------- */
+@media (max-width: 768px) {
+  .app-wrapper {
+    padding: 0 1rem;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 3rem 0 1.5rem;
+  }
+
+  .hero::before {
+    width: 100%;
+    height: 200px;
+  }
+
+  .hero-title {
+    font-size: clamp(1.8rem, 6vw, 2.4rem);
+  }
+
+  .hero-subtitle {
+    font-size: 0.92rem;
+    max-width: 90%;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-badge {
+    font-size: 0.68rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  /* Form */
+  .form-wrapper {
+    max-width: 100%;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .button-row .btn-analyze {
+    width: 100%;
+  }
+
+  /* Dashboard */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  /* Stats */
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 0.85rem 0.65rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  /* Cards */
+  .card {
+    padding: 1.1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .card-title {
+    font-size: 0.88rem;
+  }
+
+  /* Tables */
+  .data-table {
+    font-size: 0.78rem;
+  }
+
+  .data-table thead th {
+    font-size: 0.65rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .data-table tbody td {
+    padding: 0.5rem;
+  }
+
+  /* Progress */
+  .progress-container {
+    max-width: 100%;
+    margin: 1.5rem auto 2rem;
+    padding: 1.15rem;
+  }
+
+  /* Health Ring */
+  .health-ring-svg {
+    width: 130px;
+    height: 130px;
+  }
+
+  .health-ring-text {
+    font-size: 2rem;
+  }
+
+  /* Cytoscape */
+  .cytoscape-container {
+    height: 350px;
+  }
+
+  /* Server Status */
+  .server-status {
+    bottom: 1rem;
+    right: 1rem;
+    min-width: 160px;
+    max-width: 240px;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .server-label {
+    font-size: 0.65rem;
+  }
+
+  /* Spot Scan */
+  .spot-scan-results {
+    padding: 1.25rem;
+  }
+
+  .spot-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spot-stat-value {
+    font-size: 1.5rem;
+  }
+
+  /* Report */
+  .report-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .report-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 1.5rem 0 2rem;
+    font-size: 0.72rem;
+  }
+
+  /* Violations */
+  .violation-summary {
+    gap: 0.3rem;
+  }
+
+  /* Risk Dashboard */
+  .risk-factors {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Semantic Duplicates */
+  .semantic-pair-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .semantic-connector {
+    flex-direction: row;
+  }
+
+  /* Graph */
+  .graph-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .graph-legend {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ---------- ≤640px (Large Phone) ---------- */
+@media (max-width: 640px) {
+  .hero {
+    padding: 2.5rem 0 1.25rem;
+  }
+
+  .hero-title {
+    font-size: clamp(1.6rem, 7vw, 2rem);
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    max-width: 95%;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .input-field {
+    padding: 0.75rem 0.85rem 0.75rem 2.4rem;
+    font-size: 0.82rem;
+  }
+
+  .btn-analyze {
+    font-size: 0.82rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .card {
+    padding: 0.95rem;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.6rem;
+  }
+
+  .card-subtitle {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.15rem;
+  }
+
+  .progress-step-label {
+    font-size: 0.82rem;
+  }
+
+  .progress-percent {
+    font-size: 0.78rem;
+  }
+
+  /* Risky files */
+  .risky-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .risky-meta {
+    margin-left: 0;
+  }
+
+  /* Duplicate pairs */
+  .dup-pair {
+    padding: 0.7rem 0.85rem;
+  }
+
+  /* Churn */
+  .churn-bar-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .churn-bar {
+    width: 100%;
+  }
+
+  /* Risk items */
+  .risk-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .risk-item-meta {
+    align-self: flex-end;
+  }
+
+  /* Spot scan */
+  .spot-scan-results {
+    padding: 1rem;
+  }
+
+  .spot-scan-results h2 {
+    font-size: 1.1rem;
+  }
+
+  .spot-stat-value {
+    font-size: 1.35rem;
+  }
+
+  .spot-stat-card {
+    padding: 1rem;
+  }
+
+  /* Server Status */
+  .server-status {
+    bottom: 0.75rem;
+    right: 0.75rem;
+    min-width: 150px;
+    max-width: 220px;
+  }
+
+  .server-waking-msg {
+    font-size: 0.7rem;
+  }
+
+  .server-subtitle {
+    font-size: 0.6rem;
+  }
+
+  /* Cold start */
+  .cold-start-overlay {
+    padding: 1rem;
+  }
+
+  .cold-start-msg {
+    font-size: 0.82rem;
+  }
+
+  .cold-start-sub {
+    font-size: 0.72rem;
+  }
+}
+
+/* ---------- ≤480px (Small Phone) ---------- */
+@media (max-width: 480px) {
+  .app-wrapper {
+    padding: 0 0.75rem;
+  }
+
+  .hero {
+    padding: 2rem 0 1rem;
+  }
+
+  .hero-title {
+    font-size: 1.65rem;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-subtitle {
+    font-size: 0.8rem;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .hero-badge {
+    font-size: 0.62rem;
+    padding: 0.25rem 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-wrapper {
+    gap: 0.5rem;
+  }
+
+  .input-field {
+    padding: 0.7rem 0.75rem 0.7rem 2.2rem;
+    font-size: 0.78rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .btn-analyze {
+    font-size: 0.78rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--radius-sm);
+    min-height: 44px;
+  }
+
+  .button-row {
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+
+  .stat-card {
+    padding: 0.7rem 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-label {
+    font-size: 0.58rem;
+  }
+
+  .stat-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dashboard-grid {
+    gap: 0.65rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card {
+    padding: 0.85rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .card-title {
+    font-size: 0.82rem;
+  }
+
+  .card-header {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .progress-container {
+    padding: 0.85rem;
+    margin: 1rem auto 1.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .progress-step-label {
+    font-size: 0.78rem;
+  }
+
+  .health-ring-svg {
+    width: 110px;
+    height: 110px;
+  }
+
+  .health-ring-text {
+    font-size: 1.7rem;
+  }
+
+  .health-label {
+    font-size: 0.7rem;
+  }
+
+  .cytoscape-container {
+    height: 280px;
+  }
+
+  .data-table {
+    font-size: 0.72rem;
+  }
+
+  .data-table thead th {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .data-table tbody td {
+    padding: 0.4rem;
+  }
+
+  .file-path {
+    font-size: 0.7rem;
+  }
+
+  .list-item {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.6rem;
+    padding: 0.12rem 0.4rem;
+  }
+
+  .violation-row {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .violation-message {
+    font-size: 0.8rem;
+  }
+
+  .server-status {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    min-width: 140px;
+    max-width: 200px;
+    padding: 0.45rem 0.7rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .server-label {
+    font-size: 0.6rem;
+  }
+
+  .server-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .footer {
+    padding: 1.25rem 0 1.5rem;
+    font-size: 0.65rem;
+  }
+
+  /* Spot scan small mobile */
+  .spot-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spot-stat-value {
+    font-size: 1.2rem;
+  }
+
+  .spot-scan-results {
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+  }
+
+  .spot-scan-results h2 {
+    font-size: 1rem;
+  }
+
+  .spot-module-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .spot-module-lines {
+    align-self: flex-end;
+  }
+
+  /* Report */
+  .report-preview-content {
+    font-size: 0.7rem;
+    padding: 0.75rem;
+    max-height: 300px;
+  }
+
+  .report-preview-header {
+    font-size: 0.72rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Node details */
+  .node-details {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .node-details-header {
+    font-size: 0.78rem;
+  }
+
+  .node-dep-tag {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+  }
+}
+
+/* ---------- Touch Device Optimizations ---------- */
+@media (hover: none) and (pointer: coarse) {
+  .btn-analyze {
+    min-height: 48px;
+  }
+
+  .badge {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .graph-btn {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+  }
+
+  .report-btn {
+    min-height: 44px;
+  }
+}

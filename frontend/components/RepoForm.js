@@ -218,7 +218,7 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
           />
         </div>
         {loading && (
-          <div className="processing-timer" style={{ fontSize: "0.85rem", color: "#8a8f98", marginTop: "10px", textAlign: "center", width: "100%" }}>
+          <div className="processing-timer">
             Processing time: {timer.toFixed(1)} seconds
           </div>
         )}
@@ -241,27 +241,27 @@ export default function RepoForm({ setData, setLoading, setError, setProgress, l
           <div className="cold-start-ready">🟢 Analysis Engine Ready</div>
         )}
 
-        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "15px" }}>
+        <div className="button-row">
           {!loading && !coldStartActive ? (
             <>
-              <button className="btn-analyze" style={{ flex: 1, background: "#2563eb" }} onClick={analyze} disabled={!repo.trim()}>
+              <button className="btn-analyze" style={{ background: "#2563eb" }} onClick={analyze} disabled={!repo.trim()}>
                 <span className="icon icon-sm">{Icons.rocket}</span> Analyze Repository
               </button>
-              <button className="btn-analyze" style={{ flex: 1, background: "#10b981" }} onClick={handleSpotScan} disabled={!repo.trim()}>
+              <button className="btn-analyze" style={{ background: "#10b981" }} onClick={handleSpotScan} disabled={!repo.trim()}>
                 <span className="icon icon-sm">{Icons.zap}</span> Quick Scan
               </button>
             </>
           ) : coldStartActive ? (
-            <button className="btn-analyze" style={{ flex: 1, background: "#d97706", cursor: "wait" }} disabled>
+            <button className="btn-analyze" style={{ background: "#d97706", cursor: "wait" }} disabled>
               <span className="icon icon-sm" style={{ animation: "spin 1s linear infinite" }}>{Icons.loader}</span> Waking Server…
             </button>
           ) : (
             <>
-              <button className="btn-analyze" style={{ flex: 1, background: "#475569", cursor: "wait" }} disabled>
+              <button className="btn-analyze" style={{ background: "#475569", cursor: "wait" }} disabled>
                 <span className="icon icon-sm" style={{ animation: "spin 1s linear infinite" }}>{Icons.loader}</span> Analyzing...
               </button>
               {jobId && (
-                <button className="btn-analyze" style={{ flex: 1, background: "#ef4444" }} onClick={handleStop}>
+                <button className="btn-analyze" style={{ background: "#ef4444" }} onClick={handleStop}>
                   <span className="icon icon-sm">{Icons.close}</span> Stop Analysis
                 </button>
               )}

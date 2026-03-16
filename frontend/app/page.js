@@ -81,43 +81,43 @@ export default function Home() {
 
       {/* ─── Spot Scan Results ─── */}
       {data && !loading && data.is_spot_scan && (
-        <div className="spot-scan-results" style={{ padding: "30px", background: "#1e293b", borderRadius: "8px", marginTop: "20px" }}>
-            <h2 style={{ color: "#fff", marginBottom: "15px" }}>Quick Scan Results</h2>
-            <p style={{ color: "#94a3b8", marginBottom: "20px" }}>Repository: <a href={data.repo} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>{data.repo}</a></p>
+        <div className="spot-scan-results">
+            <h2>Quick Scan Results</h2>
+            <p className="spot-repo-link">Repository: <a href={data.repo} target="_blank" rel="noreferrer">{data.repo}</a></p>
             
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", marginBottom: "20px" }}>
-                <div style={{ background: "#0f172a", padding: "20px", borderRadius: "8px" }}>
-                    <h3 style={{ color: "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase" }}>Total Files</h3>
-                    <div style={{ fontSize: "2rem", color: "#60a5fa", fontWeight: "bold" }}>{data.total_files}</div>
+            <div className="spot-stats-grid">
+                <div className="spot-stat-card">
+                    <div className="spot-stat-label">Total Files</div>
+                    <div className="spot-stat-value" style={{ color: "var(--text-accent)" }}>{data.total_files}</div>
                 </div>
-                <div style={{ background: "#0f172a", padding: "20px", borderRadius: "8px" }}>
-                    <h3 style={{ color: "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase" }}>Processing Time</h3>
-                    <div style={{ fontSize: "2rem", color: "#34d399", fontWeight: "bold" }}>
+                <div className="spot-stat-card">
+                    <div className="spot-stat-label">Processing Time</div>
+                    <div className="spot-stat-value" style={{ color: "var(--success)" }}>
                         {processingTime ? `${processingTime}s` : "N/A"}
                     </div>
                 </div>
             </div>
 
-            <div style={{ background: "#0f172a", padding: "20px", borderRadius: "8px", marginBottom: "20px" }}>
-                <h3 style={{ color: "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", marginBottom: "10px" }}>Languages Detected</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            <div className="spot-section-card">
+                <h3>Languages Detected</h3>
+                <div className="spot-lang-list">
                     {data.languages?.map((lang, i) => (
-                        <span key={i} style={{ background: "#334155", padding: "5px 10px", borderRadius: "4px", fontSize: "0.85rem", color: "#e2e8f0" }}>{lang}</span>
+                        <span key={i} className="spot-lang-tag">{lang}</span>
                     ))}
-                    {(!data.languages || data.languages.length === 0) && <span style={{ color: "#64748b" }}>None detected</span>}
+                    {(!data.languages || data.languages.length === 0) && <span style={{ color: "var(--text-muted)" }}>None detected</span>}
                 </div>
             </div>
 
-            <div style={{ background: "#0f172a", padding: "20px", borderRadius: "8px" }}>
-                <h3 style={{ color: "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", marginBottom: "15px" }}>Largest Modules</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="spot-section-card">
+                <h3>Largest Modules</h3>
+                <div>
                     {data.largest_modules?.map((m, i) => (
-                        <div key={i} style={{ display: "flex", justifyContent: "space-between", background: "#1e293b", padding: "10px", borderRadius: "4px" }}>
-                            <span style={{ color: "#e2e8f0", fontFamily: "monospace", fontSize: "0.85rem", wordBreak: "break-all" }}>{m.file}</span>
-                            <span style={{ color: "#94a3b8", fontSize: "0.85rem", whiteSpace: "nowrap", marginLeft: "10px" }}>{m.lines} lines</span>
+                        <div key={i} className="spot-module-row">
+                            <span className="spot-module-name">{m.file}</span>
+                            <span className="spot-module-lines">{m.lines} lines</span>
                         </div>
                     ))}
-                    {(!data.largest_modules || data.largest_modules.length === 0) && <span style={{ color: "#64748b" }}>None found</span>}
+                    {(!data.largest_modules || data.largest_modules.length === 0) && <span style={{ color: "var(--text-muted)" }}>None found</span>}
                 </div>
             </div>
         </div>
@@ -133,8 +133,8 @@ export default function Home() {
           <div className="dashboard-grid">
             
             {processingTime && (
-              <div style={{ gridColumn: "1 / -1", textAlign: "right", color: "#8a8f98", fontSize: "0.9rem", marginBottom: "-10px" }}>
-                Analysis completed in <span style={{ color: "#fff", fontWeight: "bold" }}>{processingTime}</span> seconds
+              <div style={{ gridColumn: "1 / -1", textAlign: "right", color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "-10px" }}>
+                Analysis completed in <span style={{ color: "var(--text-primary)", fontWeight: "bold" }}>{processingTime}</span> seconds
               </div>
             )}
 
