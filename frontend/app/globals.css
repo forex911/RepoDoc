@@ -787,6 +787,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---------- Progress Bar ---------- */
 .progress-container {
+  width: 100%;
   max-width: 660px;
   margin: 2rem auto 2.5rem;
   padding: 1.5rem;
