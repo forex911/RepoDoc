@@ -176,7 +176,7 @@ export default function Home() {
 
       {/* ─── Footer ─── */}
       <footer className="footer">
-        AI Repository Intelligence · Built with Next.js + FastAPI
+        Forex911
       </footer>
 
     </div>
