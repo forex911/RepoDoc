@@ -4,6 +4,9 @@ export const metadata = {
   title: 'AI Repo Intelligence — Analyze GitHub Repositories',
   description: 'Intelligently analyze GitHub repositories with AI-powered code complexity, architecture mapping, contributor insights, and health scoring.',
   keywords: 'GitHub, repository, analysis, AI, code quality, architecture',
+  icons: {
+    icon: '/images/repodoc.png',
+  },
 }
 
 export default function RootLayout({ children }) {
